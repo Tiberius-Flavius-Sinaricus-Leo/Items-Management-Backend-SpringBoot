@@ -1,0 +1,23 @@
+# ==========================================
+# Database Configuration (REPLACE THESE VALUES)
+# ==========================================
+spring.datasource.url=jdbc:postgresql://<YOUR_HOST_OR_IP>:<PORT>/<DATABASE_NAME>
+spring.datasource.username=<YOUR_DB_USERNAME>
+spring.datasource.password=<YOUR_DB_PASSWORD>
+
+# ==========================================
+# Application Secrets (REPLACE THIS VALUE)
+# ==========================================
+jwt.secret=<A_LONG_AND_SECURE_JWT_SECRET_KEY>
+
+# ==========================================
+# General Configuration (Can usually be committed)
+# ==========================================
+spring.jpa.hibernate.ddl-auto=update
+logging.level.org.springframework.security=DEBUG
+
+# ==========================================
+# Environment-Specific Path (Set this if needed)
+# ==========================================
+# If running on a server, this is often best set via environment variables.
+# server.servlet.context-path=/your-crud-app
