@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.xw.api.dto.CategoryRequest;
 import com.xw.api.dto.CategoryResponse;
 import com.xw.api.entity.CategoryEntity;
+import com.xw.api.exception.CategoryNotEmptyException;
 import com.xw.api.repository.CategoryRepository;
 import com.xw.api.repository.ItemRepository;
 import com.xw.api.service.CategoryService;
@@ -66,6 +67,11 @@ public class CategoryServiceImplementation implements CategoryService {
   public void deleteCategory(String categoryId) {
     CategoryEntity entity = categoryRepository.findByCategoryId(categoryId)
         .orElseThrow(() -> new RuntimeException("Category not found with id: " + categoryId));
+    // Check if category has any items before deletion
+    int itemCount = itemRepository.countByCategory(entity.getId());
+    if (itemCount > 0) {
+      throw new CategoryNotEmptyException("Cannot delete category with existing items. Please remove all items first.");
+    }
     categoryRepository.delete(entity);
   }
 
