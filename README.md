@@ -84,9 +84,32 @@ Before running this application, make sure you have:
    # JWT Secret (Generate a secure secret key)
    jwt.secret=your_very_long_and_secure_jwt_secret_key_here
    
+   # Super User Configuration (Optional - for automatic admin creation)
+   app.superuser.email=admin@yourdomain.com
+   app.superuser.username=admin
+   app.superuser.password=your_secure_password_here
+   
    # JPA Configuration
    spring.jpa.hibernate.ddl-auto=update
    logging.level.org.springframework.security=DEBUG
+   ```
+
+4. **Automatic Super User Creation**
+   
+   The application automatically creates a default admin user if no admin users exist in the database. This simplifies the initial setup process.
+   
+   **Default Credentials** (if not configured):
+   - Email: `admin@example.com`
+   - Username: `admin`
+   - Password: `admin123`
+   
+   **⚠️ Security Warning**: Change these default credentials immediately after first login for security purposes!
+   
+   **Custom Configuration**: You can customize the super user credentials by setting these properties:
+   ```properties
+   app.superuser.email=your-admin@domain.com
+   app.superuser.username=your-admin-username
+   app.superuser.password=your-secure-password
    ```
 
 ## 🏃‍♂️ Running the Application
