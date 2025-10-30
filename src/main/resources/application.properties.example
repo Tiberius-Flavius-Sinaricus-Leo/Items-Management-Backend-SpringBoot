@@ -21,3 +21,12 @@ logging.level.org.springframework.security=DEBUG
 # ==========================================
 # If running on a server, this is often best set via environment variables.
 # server.servlet.context-path=/your-crud-app
+
+# ==========================================
+# Super User Configuration (Default admin user)
+# ==========================================
+# These will be used to create a default admin user if none exists at startup
+# Change these values for security purposes
+app.superuser.email=admin@yourdomain.com
+app.superuser.username=admin
+app.superuser.password=your_secure_password_here
