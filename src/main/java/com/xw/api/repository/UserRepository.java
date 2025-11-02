@@ -23,4 +23,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
   @Query("SELECT COUNT(u) > 0 FROM UserEntity u WHERE u.role = 'ROLE_ADMIN'")
   boolean existsAdminUser();
+
+  @Query("SELECT COUNT(u) > 0 FROM UserEntity u WHERE u.role = 'ROLE_ROOT'")
+  boolean existsRootUser();
 }

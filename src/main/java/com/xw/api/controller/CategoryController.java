@@ -15,10 +15,10 @@ import org.springframework.http.HttpStatus;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 
@@ -38,7 +38,7 @@ public class CategoryController {
     }
   }
 
-  @PatchMapping("/admin/categories/{categoryId}")
+  @PutMapping("/admin/categories/{categoryId}")
   @ResponseStatus(HttpStatus.OK)
   public CategoryResponse updateCategory(@PathVariable String categoryId, @RequestBody CategoryRequest request) {
     try {

@@ -84,9 +84,9 @@ Before running this application, make sure you have:
    # JWT Secret (Generate a secure secret key)
    jwt.secret=your_very_long_and_secure_jwt_secret_key_here
    
-   # Super User Configuration (Optional - for automatic admin creation)
-   app.superuser.email=admin@yourdomain.com
-   app.superuser.username=admin
+   # Super User Configuration (Optional - for automatic root user creation)
+   app.superuser.email=root@yourdomain.com
+   app.superuser.username=root
    app.superuser.password=your_secure_password_here
    
    # JPA Configuration
@@ -96,12 +96,12 @@ Before running this application, make sure you have:
 
 4. **Automatic Super User Creation**
    
-   The application automatically creates a default admin user if no admin users exist in the database. This simplifies the initial setup process.
+   The application automatically creates a default root user if no root user exists in the database. This simplifies the initial setup process.
    
    **Default Credentials** (if not configured):
-   - Email: `admin@example.com`
-   - Username: `admin`
-   - Password: `admin123`
+   - Email: `root@example.com`
+   - Username: `root`
+   - Password: `root123`
    
    **⚠️ Security Warning**: Change these default credentials immediately after first login for security purposes!
    

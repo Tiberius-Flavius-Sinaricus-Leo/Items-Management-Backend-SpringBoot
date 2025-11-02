@@ -18,6 +18,8 @@ import com.xw.api.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PutMapping;
+
 
 
 @RestController
@@ -58,5 +60,15 @@ public class UserController {
   public UserResponse getUserByEmail(@PathVariable String userEmail) {
     return userService.getUserByEmail(userEmail)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with email: " + userEmail));
+  }
+
+  @PutMapping("/users/{userEmail}")
+  @ResponseStatus(HttpStatus.OK)
+  public UserResponse updateUser(@PathVariable String userEmail, @RequestBody UserRequest request) {
+    try {
+      return userService.updateUser(userEmail, request);
+    } catch (Exception e) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to update user: " + userEmail + ", error message: " + e.getMessage(), e);
+    }
   }
 }

@@ -10,6 +10,8 @@ public interface UserService {
 
   public UserResponse createUser(UserRequest request);
 
+  public UserResponse createInitialSuperUser(UserRequest request);
+
   public String getUserRole(String userEmail);
 
   public List<UserResponse> getAllUsers();

@@ -10,7 +10,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,20 +40,6 @@ public class AuthController {
 
   private final JwtUtils jwtUtils;
 
-  // @PostMapping("/logout")
-  // public ResponseEntity<Void> logout(HttpServletResponse response) {
-  //   // Invalidate the JWT cookie by setting maxAge to 0
-  //   ResponseCookie cookie = ResponseCookie.from("token", "")
-  //       .httpOnly(true)
-  //       .secure(true)
-  //       .path("/")
-  //       .sameSite("None")
-  //       .maxAge(0)
-  //       .build();
-  //   response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-  //   return ResponseEntity.noContent().build();
-  // }
-
   @GetMapping("/check-login")
   public ResponseEntity<AuthResponse> checkLogin(@AuthenticationPrincipal UserDetails userDetails) {
     if (userDetails == null) {
@@ -69,9 +57,13 @@ public class AuthController {
     String password = request.getPassword();
     Boolean rememberMe = request.getRememberMe();
     try {
-      // Authenticate the user
-      authenticationManager
-      .authenticate(new UsernamePasswordAuthenticationToken(userEmail, password));
+      // Authenticate the user and get the Authentication object
+      Authentication authentication = authenticationManager
+          .authenticate(new UsernamePasswordAuthenticationToken(userEmail, password));
+      
+      // Set the authentication in the security context
+      SecurityContextHolder.getContext().setAuthentication(authentication);
+      
       // If authentication is successful, load user details
       final UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
       // Generate a token
@@ -96,6 +88,23 @@ public class AuthController {
     }
     catch (BadCredentialsException e) {
       throw new AuthenticationException("Invalid credentials", e);
+    }
+  }
+
+  @PostMapping("/verify-credentials")
+  public ResponseEntity<Boolean> verifyCredentials(@RequestBody AuthRequest request) {
+    String userEmail = request.getUserEmail();
+    String password = request.getPassword();
+    
+    try {
+      // Attempt to authenticate the user credentials
+      authenticationManager
+          .authenticate(new UsernamePasswordAuthenticationToken(userEmail, password));
+      // If authentication is successful, return true
+      return ResponseEntity.ok(true);
+    } catch (DisabledException | BadCredentialsException e) {
+      // If authentication fails, return false
+      return ResponseEntity.ok(false);
     }
   }
 }
