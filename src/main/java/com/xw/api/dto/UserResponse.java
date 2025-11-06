@@ -18,4 +18,5 @@ public class UserResponse {
   private String userEmail;
   private Timestamp createdAt;
   private Timestamp updatedAt;
+  private Timestamp lastLoginAt;
 }

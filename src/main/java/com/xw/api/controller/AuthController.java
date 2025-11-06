@@ -20,13 +20,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.xw.api.dto.AuthRequest;
 import com.xw.api.dto.AuthResponse;
 import com.xw.api.exception.AuthenticationException;
+import com.xw.api.exception.UserNotFoundException;
 import com.xw.api.service.UserService;
 import com.xw.api.utils.JwtUtils;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
-
 
 @RestController
 @RequiredArgsConstructor
@@ -46,13 +46,19 @@ public class AuthController {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
     String userEmail = userDetails.getUsername();
+    if (userService.hasCurrentUserNeverLoggedIn(userEmail)) {
+      try {
+        userService.updateLastLoginAt(userEmail);
+      } catch (UserNotFoundException e) {
+        throw new AuthenticationException("Failed to update last login time as no user found", e);
+      }
+    }
     String role = userService.getUserRole(userEmail);
     return ResponseEntity.ok(new AuthResponse(userEmail, role));
   }
-  
 
   @PostMapping("/login")
-  public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request, HttpServletResponse response){
+  public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request, HttpServletResponse response) {
     String userEmail = request.getUserEmail();
     String password = request.getPassword();
     Boolean rememberMe = request.getRememberMe();
@@ -60,10 +66,10 @@ public class AuthController {
       // Authenticate the user and get the Authentication object
       Authentication authentication = authenticationManager
           .authenticate(new UsernamePasswordAuthenticationToken(userEmail, password));
-      
+
       // Set the authentication in the security context
       SecurityContextHolder.getContext().setAuthentication(authentication);
-      
+
       // If authentication is successful, load user details
       final UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
       // Generate a token
@@ -78,15 +84,17 @@ public class AuthController {
           .sameSite("None")
           .maxAge(maxAge)
           .build();
+      try {
+        userService.updateLastLoginAt(userEmail);
+      } catch (UserNotFoundException e) {
+        throw new AuthenticationException("Failed to update last login time as no user found", e);
+      }
 
       response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-
       return ResponseEntity.ok(new AuthResponse(userEmail, role));
-    }
-    catch (DisabledException e) {
+    } catch (DisabledException e) {
       throw new AuthenticationException("USER_DISABLED", e);
-    }
-    catch (BadCredentialsException e) {
+    } catch (BadCredentialsException e) {
       throw new AuthenticationException("Invalid credentials", e);
     }
   }
@@ -95,7 +103,7 @@ public class AuthController {
   public ResponseEntity<Boolean> verifyCredentials(@RequestBody AuthRequest request) {
     String userEmail = request.getUserEmail();
     String password = request.getPassword();
-    
+
     try {
       // Attempt to authenticate the user credentials
       authenticationManager
