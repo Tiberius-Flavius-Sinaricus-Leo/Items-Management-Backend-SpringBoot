@@ -18,6 +18,7 @@ import com.xw.api.common.UserRole;
 import com.xw.api.dto.UserRequest;
 import com.xw.api.dto.UserResponse;
 import com.xw.api.entity.UserEntity;
+import com.xw.api.exception.UserNotFoundException;
 import com.xw.api.repository.UserRepository;
 import com.xw.api.service.UserService;
 
@@ -56,7 +57,7 @@ public class UserServiceImplementation implements UserService {
   private UserEntity getRequesterEntity() {
     String email = getRequesterEmail();
     return userRepository.findByUserEmail(email)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found in database"));
+        .orElseThrow(() -> new UserNotFoundException("User not found in database with email: " + email));
   }
 
   private UserResponse convertToResponse(UserEntity entity) {
@@ -67,6 +68,7 @@ public class UserServiceImplementation implements UserService {
         .role(entity.getRole().name())
         .createdAt(entity.getCreatedAt())
         .updatedAt(entity.getUpdatedAt())
+        .lastLoginAt(entity.getLastLoginAt())
         .build();
   }
 
@@ -77,6 +79,7 @@ public class UserServiceImplementation implements UserService {
         .userEmail(request.getUserEmail())
         .password(passwordEncoder.encode(request.getPassword()))
         .role(UserRole.valueOf(request.getRole().toUpperCase()))
+        .lastLoginAt(null)
         .build();
   }
 
@@ -174,7 +177,7 @@ public class UserServiceImplementation implements UserService {
   public UserResponse updateUser(String userEmail, UserRequest request) {
     UserEntity requester = getRequesterEntity();
     UserEntity target = userRepository.findByUserEmail(userEmail)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with email: " + userEmail));
+        .orElseThrow(() -> new UserNotFoundException("User not found with email: " + userEmail));
 
     if (target.getRole() == UserRole.ROLE_ROOT) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot modify root user");
@@ -260,5 +263,30 @@ public class UserServiceImplementation implements UserService {
 
     newUser = userRepository.save(newUser);
     return convertToResponse(newUser);
+  }
+
+  @Override
+  @Transactional
+  public void updateLastLoginAt(String userEmail) {
+    Optional<UserEntity> userOpt = userRepository.findByUserEmail(userEmail);
+    if (userOpt.isPresent()) {
+      UserEntity user = userOpt.get();
+      user.setLastLoginAt(new java.sql.Timestamp(System.currentTimeMillis()));
+      userRepository.save(user);
+    }
+    else {
+      throw new UserNotFoundException("User not found with email: " + userEmail);
+    }
+  }
+
+  @Override
+  public boolean hasCurrentUserNeverLoggedIn(String userEmail) {
+    Optional<UserEntity> userOpt = userRepository.findByUserEmail(userEmail);
+    if (userOpt.isPresent()) {
+      UserEntity user = userOpt.get();
+      return user.getLastLoginAt() == null;
+    } else {
+      throw new UserNotFoundException("User not found with email: " + userEmail);
+    }
   }
 }

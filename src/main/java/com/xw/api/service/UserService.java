@@ -21,4 +21,8 @@ public interface UserService {
   public UserResponse updateUser(String userEmail, UserRequest request);
 
   public Optional<UserResponse> getUserByEmail(String userEmail);
+
+  public void updateLastLoginAt(String userEmail);
+
+  public boolean hasCurrentUserNeverLoggedIn(String userEmail);
 }
